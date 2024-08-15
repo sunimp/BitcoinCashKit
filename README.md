@@ -1,6 +1,6 @@
 # BitcoinCashKit.Swift
 
-`BitcoinCashKit.Swift` is a package that extends [BitcoinCore.Swift](https://github.com/horizontalsystems/BitcoinCore.Swift) and makes it usable with `BitcoinCash (ABC)` Mainnet and Testnet networks. 
+`BitcoinCashKit.Swift` is a package that extends [BitcoinCore.Swift](https://github.com/sunimp/BitcoinCore.Swift) and makes it usable with `BitcoinCash (ABC)` Mainnet and Testnet networks. 
 
 ## Features
 
@@ -11,7 +11,7 @@
 
 ## Usage
 
-Because BitcoinCash is a fork of Bitcoin, the usage of this package does not differ much from `BitcoinKit.Swift`. So here, we only describe some differences between these packages. For more usage documentation, please see [BitcoinKit.Swift](https://github.com/horizontalsystems/BitcoinKit.Swift)
+Because BitcoinCash is a fork of Bitcoin, the usage of this package does not differ much from `BitcoinKit.Swift`. So here, we only describe some differences between these packages. For more usage documentation, please see [BitcoinKit.Swift](https://github.com/sunimp/BitcoinKit.Swift)
 
 ### Initialization
 
@@ -41,7 +41,7 @@ let bitcoinCashKit = try BitcoinCashKit.Kit(
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/horizontalsystems/BitcoinCashKit.Swift.git", .upToNextMajor(from: "1.0.0"))
+    .package(url: "https://github.com/sunimp/BitcoinCashKit.Swift.git", .upToNextMajor(from: "1.0.0"))
 ]
 ```
 
@@ -51,5 +51,5 @@ All features of the library are used in example project. It can be referred as a
 
 ## License
 
-The `BitcoinCashKit` toolkit is open source and available under the terms of the [MIT License](https://github.com/horizontalsystems/BitcoinCashKit.Swift/blob/master/LICENSE).
+The `BitcoinCashKit` toolkit is open source and available under the terms of the [MIT License](https://github.com/sunimp/BitcoinCashKit.Swift/blob/master/LICENSE).
 

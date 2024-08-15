@@ -1,6 +1,6 @@
 import Foundation
-import HsCryptoKit
-import HsExtensions
+import WWCryptoKit
+import WWExtensions
 
 enum CashAddrBech32 {
     private static let base32Alphabets = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"

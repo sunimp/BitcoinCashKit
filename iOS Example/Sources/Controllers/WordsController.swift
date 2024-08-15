@@ -1,5 +1,5 @@
-import HdWalletKit
 import UIKit
+import HDWalletKit
 
 class WordsController: UIViewController {
     @IBOutlet var textView: UITextView?

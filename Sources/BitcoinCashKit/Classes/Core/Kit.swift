@@ -1,8 +1,8 @@
 import BigInt
 import BitcoinCore
 import Foundation
-import HdWalletKit
-import HsToolKit
+import HDWalletKit
+import WWToolKit
 
 public class Kit: AbstractKit {
     private static let name = "BitcoinCashKit"
