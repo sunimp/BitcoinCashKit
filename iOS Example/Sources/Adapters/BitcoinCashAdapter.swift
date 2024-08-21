@@ -1,3 +1,12 @@
+//
+//  BitcoinCashAdapter.swift
+//  BitcoinCashKit-Example
+//
+//  Created by Sun on 2024/8/21.
+//
+
+import Foundation
+
 import BitcoinCashKit
 import BitcoinCore
 import HDWalletKit

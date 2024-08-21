@@ -1,5 +1,13 @@
-import BitcoinCore
+//
+//  EDAValidator.swift
+//  BitcoinCashKit
+//
+//  Created by Sun on 2024/8/21.
+//
+
 import Foundation
+
+import BitcoinCore
 
 public class ForkValidator: IBlockChainedValidator {
     private let concreteValidator: IBitcoinCashBlockValidator

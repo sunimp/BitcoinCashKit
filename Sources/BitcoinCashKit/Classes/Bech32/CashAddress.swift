@@ -1,5 +1,13 @@
-import BitcoinCore
+//
+//  CashAddress.swift
+//  BitcoinCashKit
+//
+//  Created by Sun on 2024/8/21.
+//
+
 import Foundation
+
+import BitcoinCore
 
 public class CashAddress: Address, Equatable {
     public let type: AddressType

@@ -1,5 +1,13 @@
-import BitcoinCore
+//
+//  CashBech32AddressConverter.swift
+//  BitcoinCashKit
+//
+//  Created by Sun on 2024/8/21.
+//
+
 import Foundation
+
+import BitcoinCore
 
 public class CashBech32AddressConverter: IAddressConverter {
     private let prefix: String

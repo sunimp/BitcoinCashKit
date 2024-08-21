@@ -1,10 +1,19 @@
+//
+//  Kit.swift
+//  BitcoinCashKit
+//
+//  Created by Sun on 2024/8/21.
+//
+
+import Foundation
+
 import BigInt
 import BitcoinCore
-import Foundation
 import HDWalletKit
 import WWToolKit
 
 public class Kit: AbstractKit {
+    
     private static let name = "BitcoinCashKit"
     private static let svChainForkHeight = 556_767 // 2018 November 14
     private static let bchnChainForkHeight = 661_648 // 2020 November 15, 14:13 GMT

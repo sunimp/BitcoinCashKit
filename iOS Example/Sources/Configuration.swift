@@ -1,3 +1,12 @@
+//
+//  Configuration.swift
+//  BitcoinCashKit-Example
+//
+//  Created by Sun on 2024/8/21.
+//
+
+import UIKit
+
 import BitcoinCore
 import WWToolKit
 
