@@ -19,7 +19,12 @@ public class DAAValidator: IBlockChainedValidator, IBitcoinCashBlockValidator {
     private let targetSpacing: Int
     private let heightInterval: Int
 
-    public init(encoder: IDifficultyEncoder, blockHelper: IBitcoinCashBlockValidatorHelper, targetSpacing: Int, heightInterval: Int) {
+    public init(
+        encoder: IDifficultyEncoder,
+        blockHelper: IBitcoinCashBlockValidatorHelper,
+        targetSpacing: Int,
+        heightInterval: Int
+    ) {
         difficultyEncoder = encoder
         self.blockHelper = blockHelper
 
@@ -28,15 +33,19 @@ public class DAAValidator: IBlockChainedValidator, IBitcoinCashBlockValidator {
     }
 
     public func validate(block: Block, previousBlock: Block) throws {
-        var blocks = blockHelper.previousWindow(for: previousBlock, count: 146) ?? [Block]() // get all blocks without previousBlock needed for found suitable and range window
+        var blocks = blockHelper
+            .previousWindow(for: previousBlock, count: 146) ??
+            [Block]() // get all blocks without previousBlock needed for found suitable and range window
 
         guard !blocks.isEmpty else {
             throw BitcoinCoreErrors.BlockValidation.noPreviousBlock
         }
         blocks.append(previousBlock) // add previous block to have all 147
 
-        guard let newLastBlockShift = blockHelper.suitableBlockIndex(for: Array(blocks.suffix(from: blocks.count - 3))), // get suitable index for last 3 blocks
-              let newFirstBlockShift = blockHelper.suitableBlockIndex(for: Array(blocks.prefix(3)))
+        guard
+            let newLastBlockShift = blockHelper.suitableBlockIndex(for: Array(blocks.suffix(from: blocks.count - 3))),
+            // get suitable index for last 3 blocks
+            let newFirstBlockShift = blockHelper.suitableBlockIndex(for: Array(blocks.prefix(3)))
         else { // get suitable index for first 3 blocks
             throw BitcoinCoreErrors.BlockValidation.noPreviousBlock
         }
@@ -68,6 +77,7 @@ public class DAAValidator: IBlockChainedValidator, IBitcoinCashBlockValidator {
     }
 
     public func isBlockValidatable(block _: Block, previousBlock: Block) -> Bool {
-        previousBlock.height >= consensusDaaForkHeight // https://news.bitcoin.com/bitcoin-cash-network-completes-a-successful-hard-fork/
+        previousBlock
+            .height >= consensusDaaForkHeight // https://news.bitcoin.com/bitcoin-cash-network-completes-a-successful-hard-fork/
     }
 }

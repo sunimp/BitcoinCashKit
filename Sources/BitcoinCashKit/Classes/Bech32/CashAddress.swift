@@ -17,15 +17,15 @@ public class CashAddress: Address, Equatable {
 
     public var scriptType: ScriptType {
         switch type {
-        case .pubKeyHash: return .p2pkh
-        case .scriptHash: return .p2sh
+        case .pubKeyHash: .p2pkh
+        case .scriptHash: .p2sh
         }
     }
 
     public var lockingScript: Data {
         switch type {
-        case .pubKeyHash: return OpCode.p2pkhStart + OpCode.push(lockingScriptPayload) + OpCode.p2pkhFinish
-        case .scriptHash: return OpCode.p2shStart + OpCode.push(lockingScriptPayload) + OpCode.p2shFinish
+        case .pubKeyHash: OpCode.p2pkhStart + OpCode.push(lockingScriptPayload) + OpCode.p2pkhFinish
+        case .scriptHash: OpCode.p2shStart + OpCode.push(lockingScriptPayload) + OpCode.p2shFinish
         }
     }
 

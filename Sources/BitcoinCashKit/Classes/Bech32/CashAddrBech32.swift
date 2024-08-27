@@ -25,7 +25,7 @@ enum CashAddrBech32 {
         return prefix + ":" + base32
     }
 
-    // string : "bitcoincash:qql8zpwglr3q5le9jnjxkmypefaku39dkygsx29fzk"
+    /// string : "bitcoincash:qql8zpwglr3q5le9jnjxkmypefaku39dkygsx29fzk"
     public static func decode(_ string: String) -> (prefix: String, data: Data)? {
         // We can't have empty string.
         // Bech32 should be uppercase only / lowercase only.

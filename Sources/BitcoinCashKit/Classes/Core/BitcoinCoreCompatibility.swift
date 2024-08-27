@@ -9,6 +9,14 @@ import Foundation
 
 import BitcoinCore
 
-extension DifficultyEncoder: IBitcoinCashDifficultyEncoder {}
-extension BlockValidatorHelper: IBlockValidatorHelperWrapper {}
-extension BlockMedianTimeHelper: IBitcoinCashBlockMedianTimeHelper {}
+// MARK: - DifficultyEncoder + IBitcoinCashDifficultyEncoder
+
+extension DifficultyEncoder: IBitcoinCashDifficultyEncoder { }
+
+// MARK: - BlockValidatorHelper + IBlockValidatorHelperWrapper
+
+extension BlockValidatorHelper: IBlockValidatorHelperWrapper { }
+
+// MARK: - BlockMedianTimeHelper + IBitcoinCashBlockMedianTimeHelper
+
+extension BlockMedianTimeHelper: IBitcoinCashBlockMedianTimeHelper { }

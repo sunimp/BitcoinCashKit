@@ -10,6 +10,8 @@ import Foundation
 import BigInt
 import BitcoinCore
 
+// MARK: - IBitcoinCashDifficultyEncoder
+
 // BitcoinCore Compatibility
 
 public protocol IBitcoinCashDifficultyEncoder {
@@ -17,14 +19,20 @@ public protocol IBitcoinCashDifficultyEncoder {
     func encodeCompact(from bigInt: BigInt) -> Int
 }
 
+// MARK: - IBitcoinCashHasher
+
 public protocol IBitcoinCashHasher {
     func hash(data: Data) -> Data
 }
+
+// MARK: - IBitcoinCashBlockValidator
 
 public protocol IBitcoinCashBlockValidator {
     func validate(block: Block, previousBlock: Block) throws
     func isBlockValidatable(block: Block, previousBlock: Block) -> Bool
 }
+
+// MARK: - IBitcoinCashBlockValidatorHelper
 
 // ###############################
 
@@ -35,10 +43,14 @@ public protocol IBitcoinCashBlockValidatorHelper {
     func previousWindow(for block: Block, count: Int) -> [Block]?
 }
 
+// MARK: - IBlockValidatorHelperWrapper
+
 public protocol IBlockValidatorHelperWrapper {
     func previous(for block: Block, count: Int) -> Block?
     func previousWindow(for block: Block, count: Int) -> [Block]?
 }
+
+// MARK: - IBitcoinCashBlockMedianTimeHelper
 
 public protocol IBitcoinCashBlockMedianTimeHelper {
     var medianTimePast: Int? { get }

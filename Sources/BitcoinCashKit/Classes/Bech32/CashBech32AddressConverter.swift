@@ -32,7 +32,8 @@ public class CashBech32AddressConverter: IAddressConverter {
             let versionByte = cashAddrData.data[0]
             let typeBits = (versionByte & 0b0111_1000)
             let sizeOffset = (versionByte & 0b0000_0100) >> 2 == 1
-            let size = 20 + (sizeOffset ? 20 : 0) + (versionByte & 0b0000_0011) * (sizeOffset ? 8 : 4) // first 3 value with steps by 4, than by 8
+            let size = 20 + (sizeOffset ? 20 : 0) + (versionByte & 0b0000_0011) *
+                (sizeOffset ? 8 : 4) // first 3 value with steps by 4, than by 8
 
             let hex = cashAddrData.data.dropFirst()
             guard hex.count == size else {

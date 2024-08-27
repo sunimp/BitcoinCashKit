@@ -10,13 +10,20 @@ import Foundation
 import BigInt
 import BitcoinCore
 
+// MARK: - EDAValidator
+
 public class EDAValidator {
     private let difficultyEncoder: IBitcoinCashDifficultyEncoder
     private let blockHelper: IBitcoinCashBlockValidatorHelper
     private let blockMedianTimeHelper: IBitcoinCashBlockMedianTimeHelper
     private let maxTargetBits: Int
 
-    public init(encoder: IBitcoinCashDifficultyEncoder, blockHelper: IBitcoinCashBlockValidatorHelper, blockMedianTimeHelper: IBitcoinCashBlockMedianTimeHelper, maxTargetBits: Int) {
+    public init(
+        encoder: IBitcoinCashDifficultyEncoder,
+        blockHelper: IBitcoinCashBlockValidatorHelper,
+        blockMedianTimeHelper: IBitcoinCashBlockMedianTimeHelper,
+        maxTargetBits: Int
+    ) {
         difficultyEncoder = encoder
         self.blockHelper = blockHelper
         self.blockMedianTimeHelper = blockMedianTimeHelper
@@ -28,6 +35,8 @@ public class EDAValidator {
         blockMedianTimeHelper.medianTimePast(block: block) ?? block.height
     }
 }
+
+// MARK: IBlockChainedValidator
 
 extension EDAValidator: IBlockChainedValidator {
     public func validate(block: Block, previousBlock: Block) throws {
