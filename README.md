@@ -41,7 +41,7 @@ let bitcoinCashKit = try BitcoinCashKit.Kit(
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/sunimp/BitcoinCashKit.Swift.git", .upToNextMajor(from: "3.1.0"))
+    .package(url: "https://github.com/sunimp/BitcoinCashKit.Swift.git", .upToNextMajor(from: "3.1.2"))
 ]
 ```
 

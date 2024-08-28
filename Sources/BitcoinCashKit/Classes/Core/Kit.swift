@@ -66,7 +66,7 @@ public class Kit: AbstractKit {
     private init(
         extendedKey: HDExtendedKey?,
         watchAddressPublicKey: WatchAddressPublicKey?,
-        walletID: String,
+        walletId: String,
         syncMode: BitcoinCore.SyncMode = .api,
         networkType: NetworkType = .mainNet(coinType: .type145),
         confirmationsThreshold: Int = 6,
@@ -82,8 +82,8 @@ public class Kit: AbstractKit {
             }
 
         let logger = logger ?? Logger(minLogLevel: .verbose)
-        let databaseFilePath = try DirectoryHelper.directoryURL(for: Kit.name).appendingPathComponent(Kit.databaseFileName(
-            walletID: walletID,
+        let databaseFilePath = try DirectoryHelper.directoryUrl(for: Kit.name).appendingPathComponent(Kit.databaseFileName(
+            walletId: walletId,
             networkType: networkType,
             syncMode: syncMode
         )).path
@@ -95,19 +95,19 @@ public class Kit: AbstractKit {
         )
 
         let apiTransactionProvider: IApiTransactionProvider?
-        let hsBlockHashFetcher = HsBlockHashFetcher(
-            hsURL: "https://api.blocksdecoded.com/v1/blockchains/bitcoin-cash",
+        let blockHashFetcher = WWBlockHashFetcher(
+            wwUrl: "https://api.blocksdecoded.com/v1/blockchains/bitcoin-cash",
             logger: logger
         )
 
         switch networkType {
         case .mainNet:
-            let apiTransactionProviderURL = "https://api.haskoin.com/bch/blockchain"
+            let apiTransactionProviderUrl = "https://api.haskoin.com/bch/blockchain"
             if case .blockchair = syncMode {
-                let blockchairApi = BlockchairApi(chainID: network.blockchairChainID, logger: logger)
+                let blockchairApi = BlockchairApi(chainId: network.blockchairChainId, logger: logger)
                 let blockchairBlockHashFetcher = BlockchairBlockHashFetcher(blockchairApi: blockchairApi)
                 let blockHashFetcher = BlockHashFetcher(
-                    hsFetcher: hsBlockHashFetcher,
+                    wwFetcher: blockHashFetcher,
                     blockchairFetcher: blockchairBlockHashFetcher,
                     checkpointHeight: checkpoint.block.height
                 )
@@ -118,8 +118,8 @@ public class Kit: AbstractKit {
                 )
             } else {
                 apiTransactionProvider = BlockchainComApi(
-                    url: apiTransactionProviderURL,
-                    blockHashFetcher: hsBlockHashFetcher,
+                    url: apiTransactionProviderUrl,
+                    blockHashFetcher: blockHashFetcher,
                     logger: logger
                 )
             }
@@ -127,7 +127,7 @@ public class Kit: AbstractKit {
         case .testNet:
             apiTransactionProvider = BlockchainComApi(
                 url: "https://api.haskoin.com/bchtest/blockchain",
-                blockHashFetcher: hsBlockHashFetcher,
+                blockHashFetcher: blockHashFetcher,
                 logger: logger
             )
         }
@@ -192,7 +192,7 @@ public class Kit: AbstractKit {
             .set(extendedKey: extendedKey)
             .set(watchAddressPublicKey: watchAddressPublicKey)
             .set(paymentAddressParser: paymentAddressParser)
-            .set(walletID: walletID)
+            .set(walletId: walletId)
             .set(confirmationsThreshold: confirmationsThreshold)
             .set(peerSize: 10)
             .set(syncMode: syncMode)
@@ -206,7 +206,7 @@ public class Kit: AbstractKit {
 
     public convenience init(
         extendedKey: HDExtendedKey,
-        walletID: String,
+        walletId: String,
         syncMode: BitcoinCore.SyncMode = .api,
         networkType: NetworkType = .mainNet(coinType: .type145),
         confirmationsThreshold: Int = 6,
@@ -215,7 +215,7 @@ public class Kit: AbstractKit {
         try self.init(
             extendedKey: extendedKey,
             watchAddressPublicKey: nil,
-            walletID: walletID,
+            walletId: walletId,
             syncMode: syncMode,
             networkType: networkType,
             confirmationsThreshold: confirmationsThreshold,
@@ -242,7 +242,7 @@ public class Kit: AbstractKit {
 
     public convenience init(
         watchAddress: String,
-        walletID: String,
+        walletId: String,
         syncMode: BitcoinCore.SyncMode = .api,
         networkType: NetworkType = .mainNet(coinType: .type145),
         confirmationsThreshold: Int = 6,
@@ -264,7 +264,7 @@ public class Kit: AbstractKit {
         try self.init(
             extendedKey: nil,
             watchAddressPublicKey: publicKey,
-            walletID: walletID,
+            walletId: walletId,
             syncMode: syncMode,
             networkType: networkType,
             confirmationsThreshold: confirmationsThreshold,
@@ -289,7 +289,7 @@ public class Kit: AbstractKit {
 
     public convenience init(
         seed: Data,
-        walletID: String,
+        walletId: String,
         syncMode: BitcoinCore.SyncMode = .api,
         networkType: NetworkType = .mainNet(coinType: .type145),
         confirmationsThreshold: Int = 6,
@@ -299,7 +299,7 @@ public class Kit: AbstractKit {
 
         try self.init(
             extendedKey: .private(key: masterPrivateKey),
-            walletID: walletID,
+            walletId: walletId,
             syncMode: syncMode,
             networkType: networkType,
             confirmationsThreshold: confirmationsThreshold,
@@ -309,12 +309,12 @@ public class Kit: AbstractKit {
 }
 
 extension Kit {
-    public static func clear(exceptFor walletIDsToExclude: [String] = []) throws {
-        try DirectoryHelper.removeAll(inDirectory: Kit.name, except: walletIDsToExclude)
+    public static func clear(exceptFor walletIdsToExclude: [String] = []) throws {
+        try DirectoryHelper.removeAll(inDirectory: Kit.name, except: walletIdsToExclude)
     }
 
-    private static func databaseFileName(walletID: String, networkType: NetworkType, syncMode: BitcoinCore.SyncMode) -> String {
-        "\(walletID)-\(networkType.description)-\(syncMode)"
+    private static func databaseFileName(walletId: String, networkType: NetworkType, syncMode: BitcoinCore.SyncMode) -> String {
+        "\(walletId)-\(networkType.description)-\(syncMode)"
     }
     
     private static func addressConverter(network: INetwork) -> AddressConverterChain {
