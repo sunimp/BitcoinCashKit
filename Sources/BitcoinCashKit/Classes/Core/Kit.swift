@@ -1,8 +1,7 @@
 //
 //  Kit.swift
-//  BitcoinCashKit
 //
-//  Created by Sun on 2024/8/21.
+//  Created by Sun on 2019/4/3.
 //
 
 import Foundation
@@ -15,28 +14,17 @@ import WWToolKit
 // MARK: - Kit
 
 public class Kit: AbstractKit {
-    
-    private static let name = "BitcoinCashKit"
-    private static let svChainForkHeight = 556_767 // 2018 November 14
-    private static let bchnChainForkHeight = 661_648 // 2020 November 15, 14:13 GMT
-    private static let abcChainForkBlockHash = "0000000000000000004626ff6e3b936941d341c5932ece4357eeccac44e6d56c".reversedData!
-    private static let bchnChainForkBlockHash = "0000000000000000029e471c41818d24b8b74c911071c4ef0b4a0509f9b5a8ce".reversedData!
-
-    private static let legacyHeightInterval = 2016 // Default block count in difficulty change circle ( Bitcoin )
-    private static let legacyTargetSpacing = 10 * 60 // Time to mining one block ( 10 min. Bitcoin )
-    private static let legacyMaxTargetBits = 0x1D00_FFFF // Initially and max. target difficulty for blocks
-
-    private static let heightInterval = 144 // Blocks count in window for calculating difficulty ( BitcoinCash )
-    private static let targetSpacing = 10 * 60 // Time to mining one block ( 10 min. same as Bitcoin )
-    private static let maxTargetBits = 0x1D00_FFFF // Initially and max. target difficulty for blocks
+    // MARK: Nested Types
 
     public enum NetworkType {
         case mainNet(coinType: CoinType)
         case testNet
 
+        // MARK: Computed Properties
+
         var network: INetwork {
             switch self {
-            case .mainNet(let coinType):
+            case let .mainNet(coinType):
                 MainNet(coinType: coinType)
             case .testNet:
                 TestNet()
@@ -45,7 +33,7 @@ public class Kit: AbstractKit {
 
         var description: String {
             switch self {
-            case .mainNet(let coinType):
+            case let .mainNet(coinType):
                 switch coinType {
                 case .type0: "mainNet" // back compatibility for database file name in old NetworkType
                 case .type145: "mainNet-145"
@@ -57,16 +45,147 @@ public class Kit: AbstractKit {
         }
     }
 
+    // MARK: Static Properties
+
+    private static let name = "BitcoinCashKit"
+    private static let svChainForkHeight = 556767 // 2018 November 14
+    private static let bchnChainForkHeight = 661648 // 2020 November 15, 14:13 GMT
+    private static let abcChainForkBlockHash = "0000000000000000004626ff6e3b936941d341c5932ece4357eeccac44e6d56c"
+        .reversedData!
+    private static let bchnChainForkBlockHash = "0000000000000000029e471c41818d24b8b74c911071c4ef0b4a0509f9b5a8ce"
+        .reversedData!
+
+    private static let legacyHeightInterval = 2016 // Default block count in difficulty change circle ( Bitcoin )
+    private static let legacyTargetSpacing = 10 * 60 // Time to mining one block ( 10 min. Bitcoin )
+    private static let legacyMaxTargetBits = 0x1D00FFFF // Initially and max. target difficulty for blocks
+
+    private static let heightInterval = 144 // Blocks count in window for calculating difficulty ( BitcoinCash )
+    private static let targetSpacing = 10 * 60 // Time to mining one block ( 10 min. same as Bitcoin )
+    private static let maxTargetBits = 0x1D00FFFF // Initially and max. target difficulty for blocks
+
+    // MARK: Computed Properties
+
     public weak var delegate: BitcoinCoreDelegate? {
         didSet {
             bitcoinCore.delegate = delegate
         }
     }
 
+    // MARK: Lifecycle
+
+    public convenience init(
+        extendedKey: HDExtendedKey,
+        walletID: String,
+        syncMode: BitcoinCore.SyncMode = .api,
+        networkType: NetworkType = .mainNet(coinType: .type145),
+        confirmationsThreshold: Int = 6,
+        logger: Logger?
+    ) throws {
+        try self.init(
+            extendedKey: extendedKey,
+            watchAddressPublicKey: nil,
+            walletID: walletID,
+            syncMode: syncMode,
+            networkType: networkType,
+            confirmationsThreshold: confirmationsThreshold,
+            logger: logger
+        )
+
+        // extending BitcoinCore
+        let bech32AddressConverter = CashBech32AddressConverter(prefix: network.bech32PrefixPattern)
+        bitcoinCore.prepend(addressConverter: bech32AddressConverter)
+
+        let restoreKeyConverter: IRestoreKeyConverter
+        if case .blockchair = syncMode {
+            restoreKeyConverter = BlockchairCashRestoreKeyConverter(
+                addressConverter: bech32AddressConverter,
+                prefix: network.bech32PrefixPattern
+            )
+        } else {
+            let base58 = Base58AddressConverter(
+                addressVersion: network.pubKeyHash,
+                addressScriptVersion: network.scriptHash
+            )
+            restoreKeyConverter = Bip44RestoreKeyConverter(addressConverter: base58)
+        }
+
+        bitcoinCore.add(restoreKeyConverter: restoreKeyConverter)
+    }
+
+    public convenience init(
+        watchAddress: String,
+        walletID: String,
+        syncMode: BitcoinCore.SyncMode = .api,
+        networkType: NetworkType = .mainNet(coinType: .type145),
+        confirmationsThreshold: Int = 6,
+        logger: Logger?
+    ) throws {
+        let network = networkType.network
+        let base58AddressConverter = Base58AddressConverter(
+            addressVersion: network.pubKeyHash,
+            addressScriptVersion: network.scriptHash
+        )
+        let bech32AddressConverter = CashBech32AddressConverter(prefix: network.bech32PrefixPattern)
+        let parserChain = AddressConverterChain()
+        parserChain.prepend(addressConverter: base58AddressConverter)
+        parserChain.prepend(addressConverter: bech32AddressConverter)
+
+        let address = try parserChain.convert(address: watchAddress)
+        let publicKey = try WatchAddressPublicKey(data: address.lockingScriptPayload, scriptType: address.scriptType)
+
+        try self.init(
+            extendedKey: nil,
+            watchAddressPublicKey: publicKey,
+            walletID: walletID,
+            syncMode: syncMode,
+            networkType: networkType,
+            confirmationsThreshold: confirmationsThreshold,
+            logger: logger
+        )
+
+        bitcoinCore.prepend(addressConverter: bech32AddressConverter)
+
+        let restoreKeyConverter: IRestoreKeyConverter
+        if case .blockchair = syncMode {
+            restoreKeyConverter = BlockchairCashRestoreKeyConverter(
+                addressConverter: bech32AddressConverter,
+                prefix: network.bech32PrefixPattern
+            )
+        } else {
+            let base58 = Base58AddressConverter(
+                addressVersion: network.pubKeyHash,
+                addressScriptVersion: network.scriptHash
+            )
+            restoreKeyConverter = Bip44RestoreKeyConverter(addressConverter: base58)
+        }
+
+        bitcoinCore.add(restoreKeyConverter: restoreKeyConverter)
+    }
+
+    public convenience init(
+        seed: Data,
+        walletID: String,
+        syncMode: BitcoinCore.SyncMode = .api,
+        networkType: NetworkType = .mainNet(coinType: .type145),
+        confirmationsThreshold: Int = 6,
+        logger: Logger?
+    ) throws {
+        let masterPrivateKey = HDPrivateKey(seed: seed, xPrivKey: Purpose.bip44.rawValue)
+
+        try self.init(
+            extendedKey: .private(key: masterPrivateKey),
+            walletID: walletID,
+            syncMode: syncMode,
+            networkType: networkType,
+            confirmationsThreshold: confirmationsThreshold,
+            logger: logger
+        )
+    }
+
     private init(
         extendedKey: HDExtendedKey?,
         watchAddressPublicKey: WatchAddressPublicKey?,
-        walletId: String,
+        walletID: String,
         syncMode: BitcoinCore.SyncMode = .api,
         networkType: NetworkType = .mainNet(coinType: .type145),
         confirmationsThreshold: Int = 6,
@@ -82,11 +201,12 @@ public class Kit: AbstractKit {
             }
 
         let logger = logger ?? Logger(minLogLevel: .verbose)
-        let databaseFilePath = try DirectoryHelper.directoryUrl(for: Kit.name).appendingPathComponent(Kit.databaseFileName(
-            walletId: walletId,
-            networkType: networkType,
-            syncMode: syncMode
-        )).path
+        let databaseFilePath = try DirectoryHelper.directoryURL(for: Kit.name)
+            .appendingPathComponent(Kit.databaseFileName(
+                walletID: walletID,
+                networkType: networkType,
+                syncMode: syncMode
+            )).path
         let storage = GrdbStorage(databaseFilePath: databaseFilePath)
         let checkpoint = Checkpoint.resolveCheckpoint(network: network, syncMode: syncMode, storage: storage)
         let apiSyncStateManager = ApiSyncStateManager(
@@ -96,15 +216,15 @@ public class Kit: AbstractKit {
 
         let apiTransactionProvider: IApiTransactionProvider?
         let blockHashFetcher = WWBlockHashFetcher(
-            wwUrl: "https://api.blocksdecoded.com/v1/blockchains/bitcoin-cash",
+            wwURL: "https://api.blocksdecoded.com/v1/blockchains/bitcoin-cash",
             logger: logger
         )
 
         switch networkType {
         case .mainNet:
-            let apiTransactionProviderUrl = "https://api.haskoin.com/bch/blockchain"
+            let apiTransactionProviderURL = "https://api.haskoin.com/bch/blockchain"
             if case .blockchair = syncMode {
-                let blockchairApi = BlockchairApi(chainId: network.blockchairChainId, logger: logger)
+                let blockchairApi = BlockchairApi(chainID: network.blockchairChainID, logger: logger)
                 let blockchairBlockHashFetcher = BlockchairBlockHashFetcher(blockchairApi: blockchairApi)
                 let blockHashFetcher = BlockHashFetcher(
                     wwFetcher: blockHashFetcher,
@@ -118,7 +238,7 @@ public class Kit: AbstractKit {
                 )
             } else {
                 apiTransactionProvider = BlockchainComApi(
-                    url: apiTransactionProviderUrl,
+                    url: apiTransactionProviderURL,
                     blockHashFetcher: blockHashFetcher,
                     logger: logger
                 )
@@ -192,7 +312,7 @@ public class Kit: AbstractKit {
             .set(extendedKey: extendedKey)
             .set(watchAddressPublicKey: watchAddressPublicKey)
             .set(paymentAddressParser: paymentAddressParser)
-            .set(walletId: walletId)
+            .set(walletID: walletID)
             .set(confirmationsThreshold: confirmationsThreshold)
             .set(peerSize: 10)
             .set(syncMode: syncMode)
@@ -203,118 +323,20 @@ public class Kit: AbstractKit {
 
         super.init(bitcoinCore: bitcoinCore, network: network)
     }
-
-    public convenience init(
-        extendedKey: HDExtendedKey,
-        walletId: String,
-        syncMode: BitcoinCore.SyncMode = .api,
-        networkType: NetworkType = .mainNet(coinType: .type145),
-        confirmationsThreshold: Int = 6,
-        logger: Logger?
-    ) throws {
-        try self.init(
-            extendedKey: extendedKey,
-            watchAddressPublicKey: nil,
-            walletId: walletId,
-            syncMode: syncMode,
-            networkType: networkType,
-            confirmationsThreshold: confirmationsThreshold,
-            logger: logger
-        )
-
-        // extending BitcoinCore
-        let bech32AddressConverter = CashBech32AddressConverter(prefix: network.bech32PrefixPattern)
-        bitcoinCore.prepend(addressConverter: bech32AddressConverter)
-
-        let restoreKeyConverter: IRestoreKeyConverter
-        if case .blockchair = syncMode {
-            restoreKeyConverter = BlockchairCashRestoreKeyConverter(
-                addressConverter: bech32AddressConverter,
-                prefix: network.bech32PrefixPattern
-            )
-        } else {
-            let base58 = Base58AddressConverter(addressVersion: network.pubKeyHash, addressScriptVersion: network.scriptHash)
-            restoreKeyConverter = Bip44RestoreKeyConverter(addressConverter: base58)
-        }
-
-        bitcoinCore.add(restoreKeyConverter: restoreKeyConverter)
-    }
-
-    public convenience init(
-        watchAddress: String,
-        walletId: String,
-        syncMode: BitcoinCore.SyncMode = .api,
-        networkType: NetworkType = .mainNet(coinType: .type145),
-        confirmationsThreshold: Int = 6,
-        logger: Logger?
-    ) throws {
-        let network = networkType.network
-        let base58AddressConverter = Base58AddressConverter(
-            addressVersion: network.pubKeyHash,
-            addressScriptVersion: network.scriptHash
-        )
-        let bech32AddressConverter = CashBech32AddressConverter(prefix: network.bech32PrefixPattern)
-        let parserChain = AddressConverterChain()
-        parserChain.prepend(addressConverter: base58AddressConverter)
-        parserChain.prepend(addressConverter: bech32AddressConverter)
-
-        let address = try parserChain.convert(address: watchAddress)
-        let publicKey = try WatchAddressPublicKey(data: address.lockingScriptPayload, scriptType: address.scriptType)
-
-        try self.init(
-            extendedKey: nil,
-            watchAddressPublicKey: publicKey,
-            walletId: walletId,
-            syncMode: syncMode,
-            networkType: networkType,
-            confirmationsThreshold: confirmationsThreshold,
-            logger: logger
-        )
-
-        bitcoinCore.prepend(addressConverter: bech32AddressConverter)
-
-        let restoreKeyConverter: IRestoreKeyConverter
-        if case .blockchair = syncMode {
-            restoreKeyConverter = BlockchairCashRestoreKeyConverter(
-                addressConverter: bech32AddressConverter,
-                prefix: network.bech32PrefixPattern
-            )
-        } else {
-            let base58 = Base58AddressConverter(addressVersion: network.pubKeyHash, addressScriptVersion: network.scriptHash)
-            restoreKeyConverter = Bip44RestoreKeyConverter(addressConverter: base58)
-        }
-
-        bitcoinCore.add(restoreKeyConverter: restoreKeyConverter)
-    }
-
-    public convenience init(
-        seed: Data,
-        walletId: String,
-        syncMode: BitcoinCore.SyncMode = .api,
-        networkType: NetworkType = .mainNet(coinType: .type145),
-        confirmationsThreshold: Int = 6,
-        logger: Logger?
-    ) throws {
-        let masterPrivateKey = HDPrivateKey(seed: seed, xPrivKey: Purpose.bip44.rawValue)
-
-        try self.init(
-            extendedKey: .private(key: masterPrivateKey),
-            walletId: walletId,
-            syncMode: syncMode,
-            networkType: networkType,
-            confirmationsThreshold: confirmationsThreshold,
-            logger: logger
-        )
-    }
 }
 
 extension Kit {
-    public static func clear(exceptFor walletIdsToExclude: [String] = []) throws {
-        try DirectoryHelper.removeAll(inDirectory: Kit.name, except: walletIdsToExclude)
+    public static func clear(exceptFor walletIDsToExclude: [String] = []) throws {
+        try DirectoryHelper.removeAll(inDirectory: Kit.name, except: walletIDsToExclude)
     }
 
-    private static func databaseFileName(walletId: String, networkType: NetworkType, syncMode: BitcoinCore.SyncMode) -> String {
-        "\(walletId)-\(networkType.description)-\(syncMode)"
+    private static func databaseFileName(
+        walletID: String,
+        networkType: NetworkType,
+        syncMode: BitcoinCore.SyncMode
+    )
+        -> String {
+        "\(walletID)-\(networkType.description)-\(syncMode)"
     }
     
     private static func addressConverter(network: INetwork) -> AddressConverterChain {

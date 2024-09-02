@@ -1,8 +1,7 @@
 //
 //  CashAddrBech32.swift
-//  BitcoinCashKit
 //
-//  Created by Sun on 2024/8/21.
+//  Created by Sun on 2018/9/28.
 //
 
 import Foundation
@@ -11,7 +10,18 @@ import WWCryptoKit
 import WWExtensions
 
 enum CashAddrBech32 {
+    // MARK: Nested Types
+
+    private enum DecodeError: Error {
+        case invalidCharacter
+        case invalidBits
+    }
+
+    // MARK: Static Properties
+
     private static let base32Alphabets = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+
+    // MARK: Static Functions
 
     public static func encode(_ bytes: Data, prefix: String) -> String {
         let payload = convertTo5bit(data: bytes, pad: true)
@@ -62,6 +72,32 @@ enum CashAddrBech32 {
         return (prefix, Data(bytes))
     }
 
+    static func convertFrom5bit(data: Data) throws -> Data {
+        var acc = Int()
+        var bits = UInt8()
+        let maxv = 255 // 255 = 0xff = 11111111
+        var converted: [UInt8] = []
+        for d in data {
+            guard (d >> 5) == 0 else {
+                throw DecodeError.invalidCharacter
+            }
+            acc = (acc << 5) | Int(d)
+            bits += 5
+
+            while bits >= 8 {
+                bits -= 8
+                converted.append(UInt8(acc >> Int(bits) & maxv))
+            }
+        }
+
+        let lastBits = UInt8(acc << (8 - bits) & maxv)
+        guard bits < 5, lastBits == 0 else {
+            throw DecodeError.invalidBits
+        }
+
+        return Data(converted)
+    }
+
     private static func verifyChecksum(prefix: String, payload: Data) -> Bool {
         PolyMod(expand(prefix) + payload) == 0
     }
@@ -90,12 +126,22 @@ enum CashAddrBech32 {
         var c: UInt64 = 1
         for d in data {
             let c0 = UInt8(c >> 35)
-            c = ((c & 0x07_FFFF_FFFF) << 5) ^ UInt64(d)
-            if c0 & 0x01 != 0 { c ^= 0x98_F2BC_8E61 }
-            if c0 & 0x02 != 0 { c ^= 0x79_B76D_99E2 }
-            if c0 & 0x04 != 0 { c ^= 0xF3_3E5F_B3C4 }
-            if c0 & 0x08 != 0 { c ^= 0xAE_2EAB_E2A8 }
-            if c0 & 0x10 != 0 { c ^= 0x1E_4F43_E470 }
+            c = ((c & 0x07FFFFFFFF) << 5) ^ UInt64(d)
+            if c0 & 0x01 != 0 {
+                c ^= 0x98F2BC8E61
+            }
+            if c0 & 0x02 != 0 {
+                c ^= 0x79B76D99E2
+            }
+            if c0 & 0x04 != 0 {
+                c ^= 0xF33E5FB3C4
+            }
+            if c0 & 0x08 != 0 {
+                c ^= 0xAE2EABE2A8
+            }
+            if c0 & 0x10 != 0 {
+                c ^= 0x1E4F43E470
+            }
         }
         return c ^ 1
     }
@@ -120,36 +166,5 @@ enum CashAddrBech32 {
             converted.append(lastBits)
         }
         return Data(converted)
-    }
-
-    static func convertFrom5bit(data: Data) throws -> Data {
-        var acc = Int()
-        var bits = UInt8()
-        let maxv = 255 // 255 = 0xff = 11111111
-        var converted: [UInt8] = []
-        for d in data {
-            guard (d >> 5) == 0 else {
-                throw DecodeError.invalidCharacter
-            }
-            acc = (acc << 5) | Int(d)
-            bits += 5
-
-            while bits >= 8 {
-                bits -= 8
-                converted.append(UInt8(acc >> Int(bits) & maxv))
-            }
-        }
-
-        let lastBits = UInt8(acc << (8 - bits) & maxv)
-        guard bits < 5, lastBits == 0 else {
-            throw DecodeError.invalidBits
-        }
-
-        return Data(converted)
-    }
-
-    private enum DecodeError: Error {
-        case invalidCharacter
-        case invalidBits
     }
 }

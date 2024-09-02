@@ -1,8 +1,7 @@
 //
 //  DAAValidator.swift
-//  BitcoinCashKit
 //
-//  Created by Sun on 2024/8/21.
+//  Created by Sun on 2019/4/15.
 //
 
 import Foundation
@@ -11,13 +10,17 @@ import BigInt
 import BitcoinCore
 
 public class DAAValidator: IBlockChainedValidator, IBitcoinCashBlockValidator {
+    // MARK: Properties
+
     private let largestHash = BigInt(1) << 256
-    private let consensusDaaForkHeight = 504_031 // 2017 November 13, 14:06 GMT
+    private let consensusDaaForkHeight = 504031 // 2017 November 13, 14:06 GMT
 
     private let difficultyEncoder: IDifficultyEncoder
     private let blockHelper: IBitcoinCashBlockValidatorHelper
     private let targetSpacing: Int
     private let heightInterval: Int
+
+    // MARK: Lifecycle
 
     public init(
         encoder: IDifficultyEncoder,
@@ -31,6 +34,8 @@ public class DAAValidator: IBlockChainedValidator, IBitcoinCashBlockValidator {
         self.targetSpacing = targetSpacing
         self.heightInterval = heightInterval
     }
+
+    // MARK: Functions
 
     public func validate(block: Block, previousBlock: Block) throws {
         var blocks = blockHelper
@@ -78,6 +83,7 @@ public class DAAValidator: IBlockChainedValidator, IBitcoinCashBlockValidator {
 
     public func isBlockValidatable(block _: Block, previousBlock: Block) -> Bool {
         previousBlock
-            .height >= consensusDaaForkHeight // https://news.bitcoin.com/bitcoin-cash-network-completes-a-successful-hard-fork/
+            .height >=
+            consensusDaaForkHeight // https://news.bitcoin.com/bitcoin-cash-network-completes-a-successful-hard-fork/
     }
 }

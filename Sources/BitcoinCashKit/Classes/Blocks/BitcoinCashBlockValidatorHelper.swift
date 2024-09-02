@@ -1,8 +1,7 @@
 //
 //  BitcoinCashBlockValidatorHelper.swift
-//  BitcoinCashKit
 //
-//  Created by Sun on 2024/8/21.
+//  Created by Sun on 2019/4/15.
 //
 
 import Foundation
@@ -10,11 +9,17 @@ import Foundation
 import BitcoinCore
 
 public class BitcoinCashBlockValidatorHelper: IBitcoinCashBlockValidatorHelper {
+    // MARK: Properties
+
     private let coreBlockValidatorHelper: IBlockValidatorHelperWrapper
+
+    // MARK: Lifecycle
 
     public init(coreBlockValidatorHelper: IBlockValidatorHelperWrapper) {
         self.coreBlockValidatorHelper = coreBlockValidatorHelper
     }
+
+    // MARK: Functions
 
     public func suitableBlockIndex(for blocks: [Block]) -> Int? { // works just for 3 blocks
         guard blocks.count == 3 else {

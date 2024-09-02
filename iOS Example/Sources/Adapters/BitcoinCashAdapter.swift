@@ -20,7 +20,7 @@ class BitcoinCashAdapter: BaseAdapter {
         guard let seed = Mnemonic.seed(mnemonic: words) else {
             fatalError("Cant make Seed")
         }
-        bitcoinCashKit = try! Kit(seed: seed, walletId: "walletId", syncMode: syncMode, networkType: networkType, logger: logger.scoped(with: "BitcoinCashKit"))
+        bitcoinCashKit = try! Kit(seed: seed, walletID: "walletID", syncMode: syncMode, networkType: networkType, logger: logger.scoped(with: "BitcoinCashKit"))
 
         super.init(name: "Bitcoin Cash", coinCode: "BCH", abstractKit: bitcoinCashKit)
         bitcoinCashKit.delegate = self

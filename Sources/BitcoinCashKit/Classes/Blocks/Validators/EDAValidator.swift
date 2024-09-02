@@ -1,8 +1,7 @@
 //
 //  EDAValidator.swift
-//  BitcoinCashKit
 //
-//  Created by Sun on 2024/8/21.
+//  Created by Sun on 2019/4/15.
 //
 
 import Foundation
@@ -13,10 +12,14 @@ import BitcoinCore
 // MARK: - EDAValidator
 
 public class EDAValidator {
+    // MARK: Properties
+
     private let difficultyEncoder: IBitcoinCashDifficultyEncoder
     private let blockHelper: IBitcoinCashBlockValidatorHelper
     private let blockMedianTimeHelper: IBitcoinCashBlockMedianTimeHelper
     private let maxTargetBits: Int
+
+    // MARK: Lifecycle
 
     public init(
         encoder: IBitcoinCashDifficultyEncoder,
@@ -30,6 +33,8 @@ public class EDAValidator {
 
         self.maxTargetBits = maxTargetBits
     }
+
+    // MARK: Functions
 
     private func medianTimePast(block: Block) -> Int {
         blockMedianTimeHelper.medianTimePast(block: block) ?? block.height

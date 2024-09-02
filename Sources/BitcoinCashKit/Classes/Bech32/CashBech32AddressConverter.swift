@@ -1,8 +1,7 @@
 //
 //  CashBech32AddressConverter.swift
-//  BitcoinCashKit
 //
-//  Created by Sun on 2024/8/21.
+//  Created by Sun on 2018/9/28.
 //
 
 import Foundation
@@ -10,11 +9,17 @@ import Foundation
 import BitcoinCore
 
 public class CashBech32AddressConverter: IAddressConverter {
+    // MARK: Properties
+
     private let prefix: String
+
+    // MARK: Lifecycle
 
     public init(prefix: String) {
         self.prefix = prefix
     }
+
+    // MARK: Functions
 
     public func convert(address: String) throws -> Address {
         var correctedAddress = address
@@ -27,12 +32,13 @@ public class CashBech32AddressConverter: IAddressConverter {
             }
             // extract type from version byte and check data size
             // first bit must be zero. Next 4 bits - address type, where 0 - pubkeyHash, 8 - scriptHash
-            // last 3 bits - size of data. where 0 - 20 byte(used Ripemd160), each next - more on 4 or 8 bytes (used Ripemd192, 224, 256, 320, 384, 448, 512)
+            // last 3 bits - size of data. where 0 - 20 byte(used Ripemd160), each next - more on 4 or 8 bytes (used
+            // Ripemd192, 224, 256, 320, 384, 448, 512)
 
             let versionByte = cashAddrData.data[0]
-            let typeBits = (versionByte & 0b0111_1000)
-            let sizeOffset = (versionByte & 0b0000_0100) >> 2 == 1
-            let size = 20 + (sizeOffset ? 20 : 0) + (versionByte & 0b0000_0011) *
+            let typeBits = (versionByte & 0b01111000)
+            let sizeOffset = (versionByte & 0b00000100) >> 2 == 1
+            let size = 20 + (sizeOffset ? 20 : 0) + (versionByte & 0b00000011) *
                 (sizeOffset ? 8 : 4) // first 3 value with steps by 4, than by 8
 
             let hex = cashAddrData.data.dropFirst()
@@ -48,7 +54,8 @@ public class CashBech32AddressConverter: IAddressConverter {
     public func convert(lockingScriptPayload: Data, type: ScriptType) throws -> Address {
         let addressType: AddressType
         switch type {
-        case .p2pkh, .p2pk:
+        case .p2pkh,
+             .p2pk:
             addressType = AddressType.pubKeyHash
         case .p2sh:
             addressType = AddressType.scriptHash
@@ -64,7 +71,12 @@ public class CashBech32AddressConverter: IAddressConverter {
         }
         versionByte = versionByte + (sizeOffset ? 1 : 0) << 2 + UInt8(size / divider)
         let bech32 = CashAddrBech32.encode(Data([versionByte]) + lockingScriptPayload, prefix: prefix)
-        return CashAddress(type: addressType, payload: lockingScriptPayload, cashAddrBech32: bech32, version: versionByte)
+        return CashAddress(
+            type: addressType,
+            payload: lockingScriptPayload,
+            cashAddrBech32: bech32,
+            version: versionByte
+        )
     }
 
     public func convert(publicKey: PublicKey, type: ScriptType) throws -> Address {

@@ -22,18 +22,18 @@ let seed = Mnemonic.seed(mnemonic: [""], passphrase: "")!
 
 let bitcoinCashKit = try BitcoinCashKit.Kit(
         seed: seed,
-        walletId: "unique_wallet_id",
+        walletID: "unique_wallet_id",
         syncMode: .full,
         networkType: .mainNet(coinType: .type145),
         confirmationsThreshold: 3,
         logger: nil
 )
 ```
-## Prerequisites
+## Requirements
 
-* Xcode 15.0+
-* Swift 5.5+
-* iOS 13+
+* Xcode 15.4+
+* Swift 5.10+
+* iOS 14.0+
 
 ## Installation
 
@@ -41,7 +41,7 @@ let bitcoinCashKit = try BitcoinCashKit.Kit(
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/sunimp/BitcoinCashKit.Swift.git", .upToNextMajor(from: "3.1.2"))
+    .package(url: "https://github.com/sunimp/BitcoinCashKit.Swift.git", .upToNextMajor(from: "3.2.0"))
 ]
 ```
 
