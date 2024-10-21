@@ -1,5 +1,6 @@
 //
 //  CashBech32AddressConverter.swift
+//  BitcoinCashKit
 //
 //  Created by Sun on 2018/9/28.
 //

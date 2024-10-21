@@ -1,5 +1,6 @@
 //
 //  BitcoinCoreCompatibility.swift
+//  BitcoinCashKit
 //
 //  Created by Sun on 2019/4/22.
 //

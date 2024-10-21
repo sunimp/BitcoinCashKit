@@ -1,13 +1,14 @@
 //
 //  CashAddrBech32.swift
+//  BitcoinCashKit
 //
 //  Created by Sun on 2018/9/28.
 //
 
 import Foundation
 
-import WWCryptoKit
-import WWExtensions
+import SWCryptoKit
+import SWExtensions
 
 enum CashAddrBech32 {
     // MARK: Nested Types

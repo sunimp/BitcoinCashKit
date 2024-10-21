@@ -1,5 +1,6 @@
 //
 //  TestNet.swift
+//  BitcoinCashKit
 //
 //  Created by Sun on 2018/7/18.
 //

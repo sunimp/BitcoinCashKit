@@ -1,5 +1,6 @@
 //
 //  CashAddress.swift
+//  BitcoinCashKit
 //
 //  Created by Sun on 2019/4/23.
 //

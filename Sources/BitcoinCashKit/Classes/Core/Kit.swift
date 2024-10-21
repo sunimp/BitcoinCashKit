@@ -1,5 +1,6 @@
 //
 //  Kit.swift
+//  BitcoinCashKit
 //
 //  Created by Sun on 2019/4/3.
 //
@@ -9,7 +10,7 @@ import Foundation
 import BigInt
 import BitcoinCore
 import HDWalletKit
-import WWToolKit
+import SWToolKit
 
 // MARK: - Kit
 
@@ -215,7 +216,7 @@ public class Kit: AbstractKit {
         )
 
         let apiTransactionProvider: IApiTransactionProvider?
-        let blockHashFetcher = WWBlockHashFetcher(
+        let blockHashFetcher = SWBlockHashFetcher(
             wwURL: "https://api.blocksdecoded.com/v1/blockchains/bitcoin-cash",
             logger: logger
         )
